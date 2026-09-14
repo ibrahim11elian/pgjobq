@@ -1,0 +1,38 @@
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.tsbuildinfo
+
+.env
+.env.*
+!.env.example
+
+*.log
+npm-debug.log*
+.npm/
+
+.DS_Store
+Thumbs.db
+
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+bench/results/
+*.local
+
+# Local bootstrap key written by the dev setup; never commit a credential.
+apikey.txt
+
+# Kiro workspace: specs, steering rules, and agent config. Local planning artefacts,
+# excluded from the repository by choice.
+.kiro/
+
+# One-off scaffold used to create the initial commit history. Not part of the project.
+scripts/commit-history.ps1
+
+# Scratch files from local probing.
+probe*.txt
+gitstatus.txt

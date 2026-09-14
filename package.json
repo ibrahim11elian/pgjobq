@@ -1,0 +1,60 @@
+{
+  "name": "pgjobq-monorepo",
+  "private": true,
+  "type": "module",
+  "description": "A durable background-job engine built on PostgreSQL SELECT ... FOR UPDATE SKIP LOCKED",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "packageManager": "npm@10.9.7",
+  "workspaces": [
+    "packages/core",
+    "packages/server",
+    "packages/worker",
+    "packages/dashboard"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "typecheck": "tsc --build --force",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,json,md}\"",
+    "db:up": "docker compose up -d --wait postgres",
+    "db:down": "docker compose down",
+    "db:reset": "docker compose down -v; docker compose up -d --wait postgres",
+    "migrate:up": "npm run migrate:up --workspace @pgjobq/core",
+    "migrate:down": "npm run migrate:down --workspace @pgjobq/core",
+    "seed": "npm run seed --workspace @pgjobq/core",
+    "smoke": "tsx --env-file-if-exists=.env packages/core/src/cli/smoke.ts",
+    "api:smoke": "tsx --env-file-if-exists=.env packages/server/src/cli/api-smoke.ts",
+    "gen:docs": "tsx packages/core/src/cli/gen-docs.ts",
+    "chaos": "tsx --env-file-if-exists=.env bench/chaos/kill-test.ts",
+    "chaos:durability": "tsx --env-file-if-exists=.env bench/chaos/durability.ts",
+    "verify": "npm run build && npm run smoke && npm run chaos && npm run chaos:durability",
+    "dev": "npm run db:up && npm run migrate:up && npm run seed",
+    "test": "vitest run --project unit",
+    "test:unit": "vitest run --project unit",
+    "test:integration": "vitest run --project integration",
+    "test:all": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "dev:api": "npm run dev --workspace @pgjobq/server",
+    "dev:worker": "npm run dev --workspace @pgjobq/worker",
+    "dev:dashboard": "npm run dev --workspace @pgjobq/dashboard",
+    "bench": "tsx bench/harness/index.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.15.0",
+    "@vitest/coverage-v8": "4.1.11",
+    "eslint": "^10.9.1",
+    "prettier": "^3.9.6",
+    "tsx": "^4.23.13",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.69.0",
+    "vitest": "4.1.11"
+  }
+}

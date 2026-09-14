@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+.git
+.github
+.kiro
+docs
+bench
+coverage
+.env
+.env.*
+!.env.example
+apikey.txt
+*.log
+*.md
+!README.md
