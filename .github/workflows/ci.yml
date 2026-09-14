@@ -93,7 +93,10 @@ jobs:
           echo $! > api.pid
         env:
           PORT: '3001'
-          API_BOOTSTRAP_KEY: ci-only-bootstrap-key-not-a-secret-32ch
+          # MUST start with `pgjq_`: Authenticator.authenticate() rejects anything without
+          # that prefix before it ever compares hashes, so a key lacking it 401s every
+          # authenticated request while /health and /ready still pass.
+          API_BOOTSTRAP_KEY: pgjq_ciRunnerKey0123456789abcdefghijklmn
           NODE_ENV: test
 
       - name: Wait for the API to be ready
@@ -118,7 +121,8 @@ jobs:
         run: npm run api:smoke
         env:
           SMOKE_BASE: http://localhost:3001
-          SMOKE_KEY: ci-only-bootstrap-key-not-a-secret-32ch
+          # Must match API_BOOTSTRAP_KEY above exactly.
+          SMOKE_KEY: pgjq_ciRunnerKey0123456789abcdefghijklmn
 
       - name: Server log on failure
         if: failure()
