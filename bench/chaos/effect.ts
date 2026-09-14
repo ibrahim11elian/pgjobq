@@ -4,7 +4,7 @@
  * In its own module deliberately: `victim.ts` runs `main()` at module scope, so importing
  * anything from it would execute a victim inside the parent process.
  */
-import { Db, sql } from '@pgjobq/core';
+import { sql, type Db } from '@pgjobq/core';
 
 export type EffectMode = 'idempotent' | 'naive';
 
