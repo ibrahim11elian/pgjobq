@@ -37,7 +37,7 @@ jobs:
           git diff --exit-code docs/state-machine.md
 
   verify:
-    name: Verify against Postgres ${{ matrix.postgres }}
+    name: Verify — Postgres ${{ matrix.postgres }}, Node ${{ matrix.node }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
