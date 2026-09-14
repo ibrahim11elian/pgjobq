@@ -80,26 +80,49 @@ jobs:
         run: npm run smoke
 
       - name: Start API
+        # `&` backgrounds the server, and because there is no `exit` here the process
+        # survives into the following steps. An earlier version ran `exit 0` once the
+        # health check passed, which ended this step's shell and took the backgrounded
+        # server down with it -- so the smoke step hit either a dead port or a fresh
+        # process whose bootstrap key was not yet registered.
+        #
+        # `nohup` + full output redirect detaches it from this step's stdio so the runner
+        # does not block waiting for the stream to close.
         run: |
-          node packages/server/dist/main.js &
+          nohup node packages/server/dist/main.js > api.log 2>&1 &
           echo $! > api.pid
-          for i in $(seq 1 40); do
-            if curl -fsS http://localhost:3001/health > /dev/null 2>&1; then
-              echo "api ready"; exit 0
-            fi
-            sleep 1
-          done
-          echo "api did not become ready"; exit 1
         env:
           PORT: '3001'
           API_BOOTSTRAP_KEY: ci-only-bootstrap-key-not-a-secret-32ch
           NODE_ENV: test
+
+      - name: Wait for the API to be ready
+        # /ready verifies the database is reachable AND migrations are current, unlike
+        # /health which only reflects process liveness. Waiting on /ready guarantees the
+        # bootstrap key has been written before the smoke test authenticates -- the key is
+        # registered during startup, after the port opens, so gating on /health alone let
+        # the test fire authenticated requests against a server with no key yet.
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:3001/ready > /dev/null 2>&1; then
+              echo "api ready after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "api did not become ready; server log:"
+          cat api.log || true
+          exit 1
 
       - name: API smoke checks
         run: npm run api:smoke
         env:
           SMOKE_BASE: http://localhost:3001
           SMOKE_KEY: ci-only-bootstrap-key-not-a-secret-32ch
+
+      - name: Server log on failure
+        if: failure()
+        run: cat api.log || true
 
       - name: Stop API
         if: always()
