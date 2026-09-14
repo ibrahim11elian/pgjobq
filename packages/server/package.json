@@ -1,0 +1,31 @@
+{
+  "name": "@pgjobq/server",
+  "version": "0.1.0",
+  "description": "HTTP API, SSE event stream, and Prometheus endpoint for pgjobq",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "engines": {
+    "node": ">=22.11.0"
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@pgjobq/core": "0.1.0",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
+    "prom-client": "^15.1.3",
+    "zod": "^4.5.4",
+    "zod-openapi": "^6.0.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6"
+  }
+}
