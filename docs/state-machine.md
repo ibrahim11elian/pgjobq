@@ -8,13 +8,13 @@ Both the worker path and the administrative path route every mutation through
 
 ## States
 
-| State       | Claimable | Terminal |
-| ----------- | --------- | -------- |
-| `available` | yes       | no       |
-| `running`   | no        | no       |
-| `succeeded` | no        | yes      |
-| `dead`      | no        | yes      |
-| `cancelled` | no        | yes      |
+| State | Claimable | Terminal |
+| ----- | --------- | -------- |
+| `available` | yes | no |
+| `running` | no | no |
+| `succeeded` | no | yes |
+| `dead` | no | yes |
+| `cancelled` | no | yes |
 
 Names avoid "pending", "queued", "completed", and "failed" deliberately: those are
 ambiguous about whether a retry follows. A job whose handler threw is back in
@@ -43,19 +43,19 @@ stateDiagram-v2
 
 ## Transitions
 
-| From        | To          | Reason           | Description                                                                    |
-| ----------- | ----------- | ---------------- | ------------------------------------------------------------------------------ |
-| `available` | `running`   | `claim`          | A worker claimed the job; attempt is incremented in the same statement.        |
-| `available` | `cancelled` | `cancel`         | An operator cancelled a job that had not started.                              |
-| `running`   | `succeeded` | `succeed`        | The handler resolved and the owning worker recorded completion.                |
-| `running`   | `available` | `retry`          | The handler failed with attempts remaining; run_at set to a jittered backoff.  |
-| `running`   | `dead`      | `exhaust`        | The handler failed on the final permitted attempt.                             |
-| `running`   | `dead`      | `non_retryable`  | The handler signalled a non-retryable failure; remaining attempts are skipped. |
-| `running`   | `available` | `reap_retry`     | The lease expired with attempts remaining; the reaper recovered the job.       |
-| `running`   | `dead`      | `reap_exhaust`   | The lease expired on the final attempt; no worker survived to report.          |
-| `running`   | `cancelled` | `cancel_ack`     | The worker acknowledged an operator cancellation request.                      |
-| `dead`      | `available` | `replay`         | An operator replayed a dead-lettered job; attempt resets to zero.              |
-| `available` | `available` | `operator_retry` | An operator moved run_at to now; does not consume an attempt.                  |
+| From | To | Reason | Description |
+| ---- | -- | ------ | ----------- |
+| `available` | `running` | `claim` | A worker claimed the job; attempt is incremented in the same statement. |
+| `available` | `cancelled` | `cancel` | An operator cancelled a job that had not started. |
+| `running` | `succeeded` | `succeed` | The handler resolved and the owning worker recorded completion. |
+| `running` | `available` | `retry` | The handler failed with attempts remaining; run_at set to a jittered backoff. |
+| `running` | `dead` | `exhaust` | The handler failed on the final permitted attempt. |
+| `running` | `dead` | `non_retryable` | The handler signalled a non-retryable failure; remaining attempts are skipped. |
+| `running` | `available` | `reap_retry` | The lease expired with attempts remaining; the reaper recovered the job. |
+| `running` | `dead` | `reap_exhaust` | The lease expired on the final attempt; no worker survived to report. |
+| `running` | `cancelled` | `cancel_ack` | The worker acknowledged an operator cancellation request. |
+| `dead` | `available` | `replay` | An operator replayed a dead-lettered job; attempt resets to zero. |
+| `available` | `available` | `operator_retry` | An operator moved run_at to now; does not consume an attempt. |
 
 ## Permitted targets by state
 

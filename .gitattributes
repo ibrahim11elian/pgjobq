@@ -1,0 +1,23 @@
+# Normalize line endings to LF in the repository for all text, so a Windows checkout and a
+# Linux CI runner agree byte-for-byte. Without this, Git's autocrlf can store or check out
+# CRLF locally while CI regenerates LF, and the gen-docs `git diff --exit-code` check fails
+# on a difference that is invisible in a normal diff view.
+* text=auto eol=lf
+
+# These are generated or compared byte-for-byte by CI. Pin them to LF explicitly so no
+# local Git setting can introduce CRLF.
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.js   text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.yml  text eol=lf
+*.sql  text eol=lf
+
+# Windows-only script; keep CRLF so it runs cleanly under Windows PowerShell.
+*.ps1  text eol=crlf
+
+# Binary — never touch.
+*.png binary
+*.webp binary
+*.jpg binary
