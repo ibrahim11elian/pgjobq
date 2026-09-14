@@ -166,11 +166,11 @@ reversal is a new migration. See [runbook.md](./runbook.md#migration-rollback).
 
 The demo runs at zero cost. Sensible options as of 2026:
 
-| Piece | Option | Notes |
-| --- | --- | --- |
-| Postgres | Neon, Supabase | Both scale to zero. **Use the direct connection string for workers.** |
-| API + worker | Fly.io, Railway, Render | Two processes from one image. Render free tier sleeps, which is fine for a demo. |
-| Dashboard | Vercel, Netlify, Cloudflare Pages | Static build; point it at the API origin. |
+| Piece        | Option                            | Notes                                                                            |
+| ------------ | --------------------------------- | -------------------------------------------------------------------------------- |
+| Postgres     | Neon, Supabase                    | Both scale to zero. **Use the direct connection string for workers.**            |
+| API + worker | Fly.io, Railway, Render           | Two processes from one image. Render free tier sleeps, which is fine for a demo. |
+| Dashboard    | Vercel, Netlify, Cloudflare Pages | Static build; point it at the API origin.                                        |
 
 Two things to get right on a free tier:
 
@@ -225,13 +225,13 @@ Every variable is validated at startup, with all problems reported at once rathe
 per restart. Full annotated list in [`.env.example`](../.env.example). The ones that matter
 most in production:
 
-| Variable | Why it matters |
-| --- | --- |
-| `DATABASE_URL` | Must be **direct** for workers, per the `LISTEN` trap |
-| `API_BOOTSTRAP_KEY` | Required in production; ≥32 chars; no placeholder-looking values |
-| `DB_POOL_MAX` | Feeds the sizing formula above |
-| `WORKER_CONCURRENCY` | Cap at the measured knee (16 across all workers per database) |
-| `WORKER_SHUTDOWN_GRACE_MS` | Must be under your orchestrator's termination grace period |
-| `WORKER_POLL_INTERVAL_MS` | Raise on scale-to-zero databases to avoid burning quota |
-| `RETENTION_ENABLED` | Leave `true`; the table grows without bound otherwise |
-| `LOG_PAYLOADS` | Keep `false`; payloads routinely carry personal data |
+| Variable                   | Why it matters                                                   |
+| -------------------------- | ---------------------------------------------------------------- |
+| `DATABASE_URL`             | Must be **direct** for workers, per the `LISTEN` trap            |
+| `API_BOOTSTRAP_KEY`        | Required in production; ≥32 chars; no placeholder-looking values |
+| `DB_POOL_MAX`              | Feeds the sizing formula above                                   |
+| `WORKER_CONCURRENCY`       | Cap at the measured knee (16 across all workers per database)    |
+| `WORKER_SHUTDOWN_GRACE_MS` | Must be under your orchestrator's termination grace period       |
+| `WORKER_POLL_INTERVAL_MS`  | Raise on scale-to-zero databases to avoid burning quota          |
+| `RETENTION_ENABLED`        | Leave `true`; the table grows without bound otherwise            |
+| `LOG_PAYLOADS`             | Keep `false`; payloads routinely carry personal data             |
