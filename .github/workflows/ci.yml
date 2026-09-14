@@ -163,15 +163,34 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      # Fails the build on a high or critical vulnerability in a production dependency.
-      # Scanning the built image rather than the lockfile catches base-image CVEs too.
-      - name: Scan image
-        uses: aquasecurity/trivy-action@0.28.0
+      # Fails the build on a high or critical vulnerability. Scanning the built image
+      # rather than the lockfile catches base-image CVEs too.
+      #
+      # Run from Trivy's own pinned image rather than via aquasecurity/trivy-action. In
+      # March 2026 that action's tags were force-pushed to credential-stealing malware
+      # (GHSA-69fq-xp46-6x23); 76 of 77 version tags were affected and later removed,
+      # which is why previously-valid tags no longer resolve. Invoking a pinned image
+      # directly removes the mutable-tag dependency from the supply chain.
+      #
+      # Cache the vulnerability DB across runs so this does not re-download ~50MB each time.
+      - name: Cache Trivy database
+        uses: actions/cache@v4
         with:
-          image-ref: pgjobq:ci
-          severity: HIGH,CRITICAL
-          ignore-unfixed: true
-          exit-code: '1'
+          path: ~/.cache/trivy
+          key: trivy-db-${{ github.run_id }}
+          restore-keys: trivy-db-
+
+      - name: Scan image
+        run: |
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "$HOME/.cache/trivy:/root/.cache/trivy" \
+            aquasec/trivy:0.71.2 image \
+              --severity HIGH,CRITICAL \
+              --ignore-unfixed \
+              --exit-code 1 \
+              --no-progress \
+              pgjobq:ci
 
   audit:
     name: Dependency audit
