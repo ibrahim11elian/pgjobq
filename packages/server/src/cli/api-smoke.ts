@@ -152,7 +152,11 @@ async function main(): Promise<void> {
   check('400 carries VALIDATION_ERROR', code(badType) === 'VALIDATION_ERROR');
   const problems = (badType.body as { error?: { details?: { problems?: unknown[] } } }).error
     ?.details?.problems;
-  check('validation error names the field', Array.isArray(problems) && problems.length > 0, problems);
+  check(
+    'validation error names the field',
+    Array.isArray(problems) && problems.length > 0,
+    problems,
+  );
 
   const unknownField = await call('POST', `/v1/queues/${QUEUE}/jobs`, {
     body: { type: 'api.demo', payload: {}, nope: 1 },
@@ -178,7 +182,11 @@ async function main(): Promise<void> {
   const list = await call('GET', `/v1/queues/${QUEUE}/jobs?limit=10`);
   check('list returns 200', list.status === 200);
   const listBody = list.body as { items?: unknown[]; nextCursor?: string | null };
-  check('list returned a page of 10', (listBody.items ?? []).length === 10, (listBody.items ?? []).length);
+  check(
+    'list returned a page of 10',
+    (listBody.items ?? []).length === 10,
+    (listBody.items ?? []).length,
+  );
   check('list supplies a nextCursor', typeof listBody.nextCursor === 'string', listBody.nextCursor);
 
   const page2 = await call(
@@ -188,7 +196,10 @@ async function main(): Promise<void> {
   const page2Body = page2.body as { items?: { id: string }[] };
   const page1Ids = new Set(((listBody.items ?? []) as { id: string }[]).map((j) => j.id));
   const page2Ids = ((page2Body.items ?? []) as { id: string }[]).map((j) => j.id);
-  check('keyset page 2 does not repeat page 1', page2Ids.every((id) => !page1Ids.has(id)));
+  check(
+    'keyset page 2 does not repeat page 1',
+    page2Ids.every((id) => !page1Ids.has(id)),
+  );
 
   const one = await call('GET', `/v1/jobs/${createdId}`);
   check('get job returns 200', one.status === 200);
@@ -213,7 +224,11 @@ async function main(): Promise<void> {
 
   const cancelAgain = await call('POST', `/v1/jobs/${delayedId}/cancel`);
   check('cancel of terminal job is 409', cancelAgain.status === 409, cancelAgain.status);
-  check('409 carries INVALID_TRANSITION', code(cancelAgain) === 'INVALID_TRANSITION', code(cancelAgain));
+  check(
+    '409 carries INVALID_TRANSITION',
+    code(cancelAgain) === 'INVALID_TRANSITION',
+    code(cancelAgain),
+  );
 
   const retryTerminal = await call('POST', `/v1/jobs/${delayedId}/retry`);
   check('retry of cancelled job is 409', retryTerminal.status === 409, retryTerminal.status);
@@ -234,7 +249,13 @@ async function main(): Promise<void> {
   section('Schedules');
   const schedName = `api-sched-${Date.now().toString(36)}`;
   const schedCreated = await call('POST', '/v1/schedules', {
-    body: { name: schedName, queue: QUEUE, type: 'api.demo', cron: '*/10 * * * *', timezone: 'UTC' },
+    body: {
+      name: schedName,
+      queue: QUEUE,
+      type: 'api.demo',
+      cron: '*/10 * * * *',
+      timezone: 'UTC',
+    },
   });
   check('create schedule is 201', schedCreated.status === 201, schedCreated.body);
   const schedId = (schedCreated.body as { id?: string }).id ?? '';
@@ -261,7 +282,10 @@ async function main(): Promise<void> {
 
   const schedPaused = await call('POST', `/v1/schedules/${schedId}/pause`);
   check('pause schedule is 200', schedPaused.status === 200);
-  check('paused schedule reports enabled=false', (schedPaused.body as { enabled?: boolean }).enabled === false);
+  check(
+    'paused schedule reports enabled=false',
+    (schedPaused.body as { enabled?: boolean }).enabled === false,
+  );
 
   const schedDeleted = await call('DELETE', `/v1/schedules/${schedId}`);
   check('delete schedule is 204', schedDeleted.status === 204, schedDeleted.status);
@@ -291,9 +315,7 @@ async function main(): Promise<void> {
     const chunk = await Promise.race([
       reader
         .read()
-        .then((r: { value?: Uint8Array }) =>
-          new TextDecoder().decode(r.value ?? new Uint8Array()),
-        ),
+        .then((r: { value?: Uint8Array }) => new TextDecoder().decode(r.value ?? new Uint8Array())),
       new Promise<string>((r) => setTimeout(() => r(''), 5000)),
     ]);
     check('sse sends an initial frame', chunk.length > 0, chunk.slice(0, 60));
